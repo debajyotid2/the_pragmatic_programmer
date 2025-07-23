@@ -26,7 +26,7 @@ def main(args: list[str]) -> None:
     with open(yaml_path, "r") as f:
         contents = yaml.safe_load(f)
     with open(yaml_path.with_suffix(".json"), "w") as f:
-        json.dump(contents, f)
+        json.dump(contents, f, indent=4)
 
 if __name__ == "__main__":
     main(sys.argv)
