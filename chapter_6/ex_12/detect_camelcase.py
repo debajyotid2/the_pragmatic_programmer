@@ -13,23 +13,49 @@ import sys
 import re
 from pathlib import Path
 
+def find_camelcase_matches(name: str) -> list[str]:
+    camelcase_pattern = r"[a-z][A-Z]"
+    return re.findall(camelcase_pattern, name)
+
 def detect_camelcase(tree: ast.Module) -> list[str]:
     ans = set()
-    camelcase_pattern = r"[a-z][A-Z]"
     for node in ast.walk(tree):
+        to_match = []
         if isinstance(node, ast.Name):
-            matches = re.findall(camelcase_pattern, node.id)
-            if len(matches) > 0:
-                ans.add(node.id)
+            to_match.append(node.id)
+        elif isinstance(node, ast.FunctionDef):
+            to_match.append(node.name)
+            for arg in node.args.args:
+                to_match.append(arg.arg)
+        else:
+            continue
+        for val in to_match:
+            if len(find_camelcase_matches(val)) > 0:
+                ans.add(val)
     return ans
 
 def replace_camelcase_with_snakecase(tree: ast.Module) -> ast.Module:
-    camelcase_pattern = r"[a-z][A-Z]"
     for node in ast.walk(tree):
+        to_match = {}
         if isinstance(node, ast.Name):
-            matches = re.findall(camelcase_pattern, node.id)
+            to_match[node.id] = node
+        elif isinstance(node, ast.FunctionDef):
+            to_match[node.name] = node
+            for arg in node.args.args:
+                to_match[arg.arg] = arg
+        else:
+            continue
+        for key, val in to_match.items():
+            matches = find_camelcase_matches(key)
+            replacement = key
             for match in matches:
-                node.id = re.sub(match, f"{match[0]}_{match[1].lower()}", node.id)
+                replacement = re.sub(match, f"{match[0]}_{match[1].lower()}", replacement)
+            if isinstance(val, ast.Name):
+                val.id = replacement           
+            elif isinstance(val, ast.FunctionDef):
+                val.name = replacement
+            elif isinstance(val, ast.arg):
+                val.arg = replacement
     return tree
 
 def main(args: list[str]) -> None:

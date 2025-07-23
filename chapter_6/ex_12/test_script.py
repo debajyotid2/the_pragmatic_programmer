@@ -37,8 +37,8 @@ print(squareLambda(4))
 
 # A class with a method
 class Calculator:
-    def add(self, a, b):
-        return a + b
+    def add(self, aGoof, bFoog, cDooh=0):
+        return aGoof + bFoog + cDooh
 
 calc = Calculator()
 print(calc.add(3, 4))
