@@ -1,21 +1,22 @@
 #include <stdio.h>
-#include "src/lexer.h"
+#include "src/tokenizer.h"
 
-int main(int argc, char** argv)
-{
-    if (argc!=2)
+int main(int argc, char** argv) {
+    if (argc!=2) {
         ERR_AND_EXIT(stderr, "Usage: %s <filename>\n", argv[0]);
+    }
 
     FILE* fp = fopen(argv[1], "r");
-    Lexemes* lexemes;
+    Token* tokens;
+    tokens_alloc(&tokens);
 
-    if (fp==NULL)
+    if (fp==NULL) {
         ERR_AND_EXIT(stderr, "Could not open file %s\n", argv[1]);
-    
-    lexemes = lexemes_alloc();
-    lexer(fp, lexemes);
-    lexemes_print(lexemes);
-    lexemes_destroy(lexemes);
+    }
+
+    tokenize(fp, tokens);
+    print_tokens(tokens, 30);
+    free(tokens);
 
     fclose(fp);
     return 0;
